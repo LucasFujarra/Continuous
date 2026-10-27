@@ -178,7 +178,7 @@ export default function App() {
     </main>
 
     {albumToDelete !== null && <DeleteAlbumModal busy={deleting} album={albumTitle(albumToDelete)} onClose={() => { if (!deleting) setAlbumToDelete(null); }} onConfirm={() => void deleteAlbum()} />}
-    {albumToEdit !== null && <EditAlbumModal cover={albumCover(albumToEdit)} title={albumTitle(albumToEdit)} color={albumColor(albumToEdit)} system={protectedFolders.has(albumToEdit)} onClose={() => setAlbumToEdit(null)} onSave={saveAlbumSettings} />}
+    {albumToEdit !== null && <EditAlbumModal onRestore={() => saveAlbumSettings({ ...albumPreferences[albumToEdit], color: defaultAlbumColor(folders.indexOf(albumToEdit)), cover: '≋' })} cover={albumCover(albumToEdit)} title={albumTitle(albumToEdit)} color={albumColor(albumToEdit)} system={protectedFolders.has(albumToEdit)} onClose={() => setAlbumToEdit(null)} onSave={saveAlbumSettings} />}
     {uploadOpen && <UploadModal onClose={() => setUploadOpen(false)} onImport={importFiles} />}
 
     <footer className="player"><div className={`now-icon ${active ? 'is-playing' : ''}`}>{active ? albumCover(active.folder) : '∞'}</div><div className="now-playing"><span>{loading ? 'PREPARANDO ÁUDIO' : active ? albumTitle(active.folder) : 'Continuous'}</span><strong>{active ? displayName(active.name, mode).replace('#', '♯') : loading ? 'Carregando seu pad…' : 'Nenhum pad tocando'}</strong></div><div className="volume"><label htmlFor="volume">Volume</label><input id="volume" type="range" min="0" max="100" value={volume} onChange={event => setVolume(Number(event.target.value))} /><output htmlFor="volume">{volume}%</output></div><button className="stop" disabled={!active && !loading} onClick={stop}>■ <span>Parar</span></button></footer>

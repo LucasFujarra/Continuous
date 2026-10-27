@@ -11,10 +11,11 @@ interface EditAlbumModalProps {
   cover: string;
   system: boolean;
   onClose: () => void;
+  onRestore: () => void;
   onSave: (settings: AlbumSettings) => void;
 }
 
-export function EditAlbumModal({ title, color, cover, system, onClose, onSave }: EditAlbumModalProps) {
+export function EditAlbumModal({ title, color, cover, system, onClose, onRestore, onSave }: EditAlbumModalProps) {
   const [name, setName] = useState(title);
   const [selectedCover, setSelectedCover] = useState(cover);
   const [coversOpen, setCoversOpen] = useState(false);
@@ -81,7 +82,10 @@ export function EditAlbumModal({ title, color, cover, system, onClose, onSave }:
       <label className="edit-label" htmlFor="album-brightness">Brilho</label>
       <input id="album-brightness" className="color-range" type="range" min="0" max="100" value={hsv.value * 100} style={{ background: `linear-gradient(to right, #000, ${hsvToHex(hsv.hue, hsv.saturation, 1)})` }} onChange={event => updateColor({ ...hsv, value: Number(event.target.value) / 100 })} />
       {error && <p className="modal-error" role="alert">{error}</p>}
-      <div className="modal-actions"><button type="button" className="secondary" onClick={onClose}>Cancelar</button><button type="submit" className="primary" disabled={!validHex || !name.trim()}>Salvar</button></div>
+      <div className="modal-actions"><button type="button" className="secondary" onClick={() => {
+        try { onRestore(); }
+        catch { setError('Não foi possível restaurar as configurações neste navegador.'); }
+      }}>Restaurar</button><button type="button" className="secondary" onClick={onClose}>Cancelar</button><button type="submit" className="primary" disabled={!validHex || !name.trim()}>Salvar</button></div>
     </form>
   </Modal>;
 }
