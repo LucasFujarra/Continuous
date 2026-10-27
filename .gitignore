@@ -1,5 +1,5 @@
 node_modules/
 dist/
 *.local
-src/assets/PAD/**/.cache/
-src/assets/PAD/**/.DS_Store
+src/assets/PAD/
+.fuse_hidden*
