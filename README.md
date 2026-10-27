@@ -41,4 +41,10 @@ Após criar o repositório, configurar `origin` e enviar o código:
 npm run deploy
 ```
 
-O script faz o build e publica somente `dist` na branch `gh-pages`, sem modificar a branch de desenvolvimento. No repositório, configure **Settings → Pages → Deploy from a branch → gh-pages / (root)**. A base relativa permite usar o nome escolhido para o repositório. Os áudios são arquivos separados no build, carregados quando selecionados. Considere o tamanho total da biblioteca e os limites da hospedagem ao publicar. Nenhum repositório ou deploy foi criado automaticamente.
+O script faz o build e publica somente `dist` na branch `gh-pages`, sem modificar a branch de desenvolvimento. No repositório, configure **Settings → Pages → Deploy from a branch → gh-pages / (root)**. O build usa a base `/Continuous/`. Para outro endereço, defina `VITE_BASE_PATH` no build (por exemplo, `VITE_BASE_PATH=/ npm run build` para hospedar na raiz). O arquivo `404.html` permite abrir as rotas diretamente no GitHub Pages. Os áudios são arquivos separados no build, carregados quando selecionados. Considere o tamanho total da biblioteca e os limites da hospedagem ao publicar. Nenhum repositório ou deploy foi criado automaticamente.
+
+## Telas e navegação
+
+`src/screens/Home.tsx` contém a biblioteca inicial; `src/screens/Pad.tsx` contém a tela de tonalidades. O player e o estado compartilhado permanecem em `src/App.tsx`.
+
+No desenvolvimento, use `/pad/angel` para abrir o álbum e `/pad/angel/c` para selecionar um tom. Sustenidos usam `c-sharp`; relativos menores usam `am`. No GitHub Pages, a base antecede o caminho: `/Continuous/pad/angel/c`. Álbuns ou tons inexistentes retornam à home. Álbuns importados dependem dos áudios salvos no navegador; a validação aguarda a restauração do cache. Links selecionam o tom; clique nele para iniciar a reprodução. Os endereços usam o nome original da pasta, mesmo após editar o título exibido.

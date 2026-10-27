@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import logo from './assets/Continuous.png';
+import { Home } from './screens/Home';
+import { Pad } from './screens/Pad';
+import { ScreenHeader } from './screens/ScreenHeader';
+import { padPath, resolvePadRoute } from './lib/routes';
+import { EditAlbumModal } from './modal/EditAlbumModal';
+import { colorLuminance, contrastingText, defaultAlbumColor, loadAlbumPreferences, type AlbumSettings } from './lib/albumSettings';
 import { BlurWaves } from './blurwaves/BlurWaves';
 import { PadPlayer } from './audio/PadPlayer';
 import { AUDIO_PATTERN, displayName, normalizeName, orderedTracks, type Mode, type Track } from './lib/library';
@@ -9,8 +14,28 @@ import { DeleteAlbumModal } from './modal/DeleteAlbumModal';
 import { UploadModal, type SelectedAudio } from './modal/UploadModal';
 
 export default function App() {
+  const [albumPreferences, setAlbumPreferences] = useState(loadAlbumPreferences);
+  const [albumToEdit, setAlbumToEdit] = useState<string | null>(null);
   const [tracks, setTracks] = useState(bundledTracks);
-  const [folder, setFolder] = useState<string | null>(null);
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
+  const readPath = () => {
+    const path = window.location.pathname;
+    return basePath && path.startsWith(`${basePath}/`) ? path.slice(basePath.length) : path === basePath ? '/' : path;
+  };
+  const [path, setPath] = useState(readPath);
+
+  function navigate(next: string, replace = false) {
+    const url = `${basePath}${next}`;
+    if (window.location.pathname !== url) window.history[replace ? 'replaceState' : 'pushState'](null, '', url);
+    setPath(next);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  useEffect(() => {
+    const onPopState = () => setPath(readPath());
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
   const [mode, setMode] = useState<Mode>('major');
   const [active, setActive] = useState<Track | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
@@ -27,8 +52,20 @@ export default function App() {
   const urls = useRef<string[]>([]);
   const protectedFolders = new Set(bundledTracks.map(track => track.folder));
   const folders = [...new Set(tracks.map(track => track.folder))].sort((a, b) => a.localeCompare(b));
+  const route = resolvePadRoute(path, folders, tracks);
+  const folder = route?.folder ?? null;
   const themeFolder = active?.folder ?? folder;
-  const themeHue = themeFolder ? 160 + Math.max(0, folders.indexOf(themeFolder)) * 35 : 245;
+  const albumTitle = (name: string) => protectedFolders.has(name) ? name : albumPreferences[name]?.title ?? name;
+  const albumColor = (name: string) => albumPreferences[name]?.color ?? defaultAlbumColor(folders.indexOf(name));
+  const themeColor = themeFolder ? albumColor(themeFolder) : '#8b81e4';
+
+  function saveAlbumSettings(settings: AlbumSettings) {
+    if (albumToEdit === null) return;
+    const next = { ...albumPreferences, [albumToEdit]: settings };
+    localStorage.setItem('continuous-albums', JSON.stringify(next));
+    setAlbumPreferences(next);
+    setAlbumToEdit(null);
+  }
   const visible = orderedTracks(tracks.filter(track => track.folder === folder));
 
   useEffect(() => {
@@ -87,7 +124,7 @@ export default function App() {
     if (!valid.length) return false;
     await cacheAudio(valid);
     addLocalTracks(valid);
-    setError(''); setFolder(null);
+    setError(''); navigate('/');
     return true;
   }
 
@@ -99,7 +136,7 @@ export default function App() {
       await deleteCachedAlbum(album);
       if (active?.folder === album || tracks.some(track => track.id === loading && track.folder === album)) stop();
       setTracks(previous => previous.filter(track => track.folder !== album));
-      if (folder === album) setFolder(null);
+      if (folder === album) navigate('/');
       setAlbumToDelete(null);
     } catch {
       setAlbumToDelete(null);
@@ -108,40 +145,41 @@ export default function App() {
   }
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
-  }, [folder]);
+    // Imported albums must finish restoring before validating a direct link.
+    if (restoring) return;
+    if (path !== '/' && !route) navigate('/', true);
+    else if (route?.track) setMode(route.mode);
+  }, [path, restoring, tracks]);
+
+  function selectMode(next: Mode) {
+    setMode(next);
+    if (folder && route?.track) navigate(padPath(folder, folders, route.track, next));
+  }
+
+  function selectTrack(track: Track) {
+    navigate(padPath(track.folder, folders, track, mode));
+    void play(track);
+  }
 
   useEffect(() => {
-    document.title = active ? `Continuous - ${active.folder}` : 'Continuous';
-  }, [active]);
+    document.title = active ? `Continuous - ${albumTitle(active.folder)}` : 'Continuous';
+  }, [active, albumPreferences]);
 
-  return <div className={folder ? 'app album-view blurwaves-host' : 'app blurwaves-host'} style={{ '--theme-hue': themeHue } as React.CSSProperties}>
-    <BlurWaves activeTrackId={active?.id ?? null} activeFolder={active?.folder ?? null} folders={folders} volume={volume} />
+  return <div className={folder ? 'app album-view blurwaves-host' : 'app blurwaves-host'} style={{ '--accent': themeColor, '--accent-text': contrastingText(themeColor), '--accent-readable': colorLuminance(themeColor) < 0.15 ? `color-mix(in srgb, ${themeColor} 45%, white)` : themeColor } as React.CSSProperties}>
+    <BlurWaves activeTrackId={active?.id ?? null} activeFolder={active?.folder ?? null} color={active ? albumColor(active.folder) : themeColor} volume={volume} />
     <main>
-      <div className="intro album-intro"><div><p className="eyebrow">Continuous</p><h1>{folder || 'Escolha uma atmosfera.'}</h1></div>
-        <a className="album-logo" href="#" aria-label="Continuous, voltar para a home" onClick={event => {
-          event.preventDefault();
-          setFolder(null);
-          window.scrollTo({ top: 0, behavior: 'instant' });
-        }}><img className="wordmark" src={logo} alt="Continuous" /></a>
-        <button className="secondary" disabled={restoring} onClick={() => setUploadOpen(true)}>＋ Adicionar pasta</button>
-      </div>
+      <ScreenHeader title={folder ? albumTitle(folder) : 'Escolha uma atmosfera.'} restoring={restoring} homeHref={`${basePath}/`} onHome={() => navigate('/')} onUpload={() => setUploadOpen(true)} />
 
       {error && <div className="error" role="alert">{error}<button aria-label="Fechar aviso" onClick={() => setError('')}>×</button></div>}
 
-      <section className="library" aria-label="Biblioteca de pads">
-        <div className="section-heading"><div>{folder && <button className="back" onClick={() => setFolder(null)}>← Voltar</button>}<span>{folder ? 'TONALIDADES' : 'BIBLIOTECA'}</span><span className="count">{folder ? visible.length : folders.length}</span></div>
-          {folder && <div className="segmented" aria-label="Modo tonal"><button aria-pressed={mode === 'major'} onClick={() => setMode('major')}>Maior</button><button aria-pressed={mode === 'minor'} onClick={() => setMode('minor')}>Menor</button></div>}
-        </div>
-
-        {!folder && !folders.length ? <div className="empty"><div className="empty-symbol">∞</div><h2>O próximo som começa aqui.</h2><p>Adicione seus arquivos em <code>src/assets/PAD</code>, separados por pasta,<br className="desktop-break" /> ou abra uma pasta do seu dispositivo para tocar agora.</p><button className="primary" disabled={restoring} onClick={() => setUploadOpen(true)}>＋ Abrir pasta de pads</button><span className="formats">MP3 · WAV · OGG · AAC · M4A · FLAC · OPUS · WEBM</span><small>Álbuns adicionados ficam salvos neste navegador.</small></div> :
-          <div className={folder ? 'notes-grid' : 'folders-grid'}>{folder ? visible.map((track, index) => <button key={track.id} className={`note-card ${active?.id === track.id ? 'playing' : ''}`} aria-pressed={active?.id === track.id} onClick={() => void play(track)}><span className="card-index">{String(index + 1).padStart(2, '0')}</span><strong>{displayName(track.name, mode).replace('#', '♯')}</strong><span className="note-caption">{loading === track.id ? 'Carregando…' : active?.id === track.id ? '● Tocando' : mode === 'major' ? 'MAIOR' : 'MENOR'}</span></button>) : folders.map((name, index) => <div className="folder-card" key={name} style={{ '--hue': `${160 + index * 35}` } as React.CSSProperties}><button className="folder-open" onClick={() => setFolder(name)}><div className="folder-art"><span>≋</span></div><div className="folder-info"><strong>{name}</strong><span>{orderedTracks(tracks.filter(track => track.folder === name)).length} tons <b>→</b></span></div></button>{!protectedFolders.has(name) && <button className="folder-remove" aria-label={`Remover álbum ${name}`} onClick={() => setAlbumToDelete(name)}>×</button>}</div>)}</div>}
-      </section>
+      {folder ? <Pad tracks={visible} mode={mode} activeId={active?.id ?? null} loadingId={loading} selectedId={route?.track?.id ?? null} onHome={() => navigate('/')} onMode={selectMode} onPlay={selectTrack} />
+        : <Home folders={folders} tracks={tracks} restoring={restoring} protectedFolders={protectedFolders} albumTitle={albumTitle} albumColor={albumColor} onOpen={name => navigate(padPath(name, folders))} onEdit={setAlbumToEdit} onDelete={setAlbumToDelete} onUpload={() => setUploadOpen(true)} />}
     </main>
 
-    {albumToDelete !== null && <DeleteAlbumModal busy={deleting} album={albumToDelete} onClose={() => { if (!deleting) setAlbumToDelete(null); }} onConfirm={() => void deleteAlbum()} />}
+    {albumToDelete !== null && <DeleteAlbumModal busy={deleting} album={albumTitle(albumToDelete)} onClose={() => { if (!deleting) setAlbumToDelete(null); }} onConfirm={() => void deleteAlbum()} />}
+    {albumToEdit !== null && <EditAlbumModal title={albumTitle(albumToEdit)} color={albumColor(albumToEdit)} system={protectedFolders.has(albumToEdit)} onClose={() => setAlbumToEdit(null)} onSave={saveAlbumSettings} />}
     {uploadOpen && <UploadModal onClose={() => setUploadOpen(false)} onImport={importFiles} />}
 
-    <footer className="player"><div className={`now-icon ${active ? 'is-playing' : ''}`}>{active ? '♫' : '∞'}</div><div className="now-playing"><span>{loading ? 'PREPARANDO ÁUDIO' : active ? 'TOCANDO AGORA' : 'PRONTO PARA TOCAR'}</span><strong>{active ? `${active.folder} · ${displayName(active.name, mode).replace('#', '♯')}` : loading ? 'Carregando seu pad…' : 'Nenhum pad tocando'}</strong></div><div className="volume"><label htmlFor="volume">Volume</label><input id="volume" type="range" min="0" max="100" value={volume} onChange={event => setVolume(Number(event.target.value))} /><output htmlFor="volume">{volume}%</output></div><button className="stop" disabled={!active && !loading} onClick={stop}>■ <span>Parar</span></button></footer>
+    <footer className="player"><div className={`now-icon ${active ? 'is-playing' : ''}`}>{active ? '♫' : '∞'}</div><div className="now-playing"><span>{loading ? 'PREPARANDO ÁUDIO' : active ? albumTitle(active.folder) : 'Continuous'}</span><strong>{active ? displayName(active.name, mode).replace('#', '♯') : loading ? 'Carregando seu pad…' : 'Nenhum pad tocando'}</strong></div><div className="volume"><label htmlFor="volume">Volume</label><input id="volume" type="range" min="0" max="100" value={volume} onChange={event => setVolume(Number(event.target.value))} /><output htmlFor="volume">{volume}%</output></div><button className="stop" disabled={!active && !loading} onClick={stop}>■ <span>Parar</span></button></footer>
   </div>;
 }

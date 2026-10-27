@@ -13,7 +13,7 @@ export function DeleteAlbumModal({ album, busy, onClose, onConfirm }: DeleteAlbu
     <p>A pasta e os áudios salvos serão removidos deste navegador. Os arquivos do dispositivo serão preservados.</p>
     <div className="modal-actions">
       <button className="secondary" disabled={busy} autoFocus onClick={onClose}>Não</button>
-      <button className="modal-danger" disabled={busy} onClick={onConfirm}>Sim, excluir</button>
+      <button className="modal-danger" disabled={busy} onClick={onConfirm}>Excluir</button>
     </div>
   </Modal>;
 }

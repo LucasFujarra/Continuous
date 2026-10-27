@@ -4,15 +4,15 @@ import './BlurWaves.css';
 interface BlurWavesProps {
   activeTrackId: string | null;
   activeFolder: string | null;
-  folders: string[];
+  color: string;
   volume: number;
 }
 
 const FADE_DURATION = 700;
 
-export function BlurWaves({ activeTrackId, activeFolder, folders, volume }: BlurWavesProps) {
-  const nextHue = 160 + Math.max(0, folders.indexOf(activeFolder ?? '')) * 35;
-  const [hue, setHue] = useState(nextHue);
+export function BlurWaves({ activeTrackId, activeFolder, color, volume }: BlurWavesProps) {
+  const nextColor = color;
+  const [waveColor, setWaveColor] = useState(nextColor);
   const [visible, setVisible] = useState(false);
   const displayed = useRef(false);
 
@@ -24,7 +24,7 @@ export function BlurWaves({ activeTrackId, activeFolder, folders, volume }: Blur
         displayed.current = false;
         return;
       }
-      setHue(nextHue);
+      setWaveColor(nextColor);
       // Apply the new color while hidden before starting the fade-in.
       fadeIn = setTimeout(() => {
         displayed.current = true;
@@ -36,11 +36,11 @@ export function BlurWaves({ activeTrackId, activeFolder, folders, volume }: Blur
       clearTimeout(transition);
       clearTimeout(fadeIn);
     };
-  }, [activeTrackId, activeFolder, nextHue]);
+  }, [activeTrackId, activeFolder, nextColor]);
 
   const size = Math.min(100, Math.max(0, volume)) / 100;
   const style = {
-    '--playing-hue': hue,
+    '--wave-color': waveColor,
     '--wave-size': size,
     '--wave-visible': visible && size > 0 ? 1 : 0,
   } as CSSProperties;

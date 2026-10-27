@@ -5,11 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build && node scripts/pages-fallback.mjs",
     "preview": "vite preview --host",
     "deploy": "bash deploy.sh",
     "check": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test src/lib/library.test.ts"
+    "test": "node --experimental-strip-types --test src/lib/library.test.ts src/lib/albumSettings.test.ts src/lib/routes.test.ts"
   },
   "dependencies": {
     "react": "19.2.6",

@@ -71,8 +71,8 @@ export function UploadModal({ onClose, onImport }: UploadModalProps) {
     } finally { setBusy(false); }
   }
 
-  return <Modal title="Adicionar álbum" onClose={() => { if (!busy) onClose(); }}>
-    <p>{supportsFolders ? 'Selecione as pastas e confirme abaixo para adicionar à biblioteca.' : 'Selecione os áudios e confirme abaixo para adicionar à biblioteca.'}</p>
+  return <Modal title="Adicionar Pad" onClose={() => { if (!busy) onClose(); }}>
+    <p>Adicione sua pasta com a coleção de pads nos formatos exibidos abaixo.</p>
     <div className="modal-upload">
       <span className="modal-symbol" aria-hidden="true">＋</span>
       <button className="primary" disabled={busy} onClick={() => void selectFolder()}>{busy ? 'Lendo pasta…' : supportsFolders ? 'Selecionar pasta' : 'Selecionar arquivos'}</button>

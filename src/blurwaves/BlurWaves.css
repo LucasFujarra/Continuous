@@ -1,7 +1,7 @@
 .blurwaves-host{isolation:isolate}
 .ambient-waves{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;opacity:var(--wave-visible, 1);transition:opacity .7s ease}
-.ambient-wave{position:absolute;top:-15%;width:calc(clamp(220px,30vw,500px) * var(--wave-size, .8));height:130%;filter:blur(40px);opacity:.8;background:radial-gradient(ellipse at center,hsl(var(--playing-hue) 80% 58% / .65),hsl(var(--playing-hue) 75% 42% / .3) 45%,transparent 75%);border-radius:45% 55% 60% 40%;animation:ambient-sway 18s ease-in-out infinite alternate;transition:width 1.2s ease;will-change:transform}
-.ambient-wave::before,.ambient-wave::after{content:"";position:absolute;inset:12% 10%;border:24px solid hsl(var(--playing-hue) 85% 65% / .55);border-radius:45% 55% 40% 60%;transform:rotate(-18deg);animation:ambient-ripple 22s ease-in-out infinite alternate}
+.ambient-wave{position:absolute;top:-15%;width:calc(clamp(220px,30vw,500px) * var(--wave-size, .8));height:130%;filter:blur(40px);opacity:.8;background:radial-gradient(ellipse at center,color-mix(in srgb,var(--wave-color) 65%,transparent),color-mix(in srgb,var(--wave-color) 30%,transparent) 45%,transparent 75%);border-radius:45% 55% 60% 40%;animation:ambient-sway 18s ease-in-out infinite alternate;transition:width 1.2s ease;will-change:transform}
+.ambient-wave::before,.ambient-wave::after{content:"";position:absolute;inset:12% 10%;border:24px solid color-mix(in srgb,var(--wave-color) 55%,transparent);border-radius:45% 55% 40% 60%;transform:rotate(-18deg);animation:ambient-ripple 22s ease-in-out infinite alternate}
 .ambient-wave::after{inset:28% -5%;transform:rotate(22deg);animation-delay:-3s;animation-direction:alternate-reverse}
 .ambient-wave-left{left:clamp(-220px,-13vw,-80px)}
 .ambient-wave-right{right:clamp(-220px,-13vw,-80px);animation-delay:-4.5s;animation-direction:alternate-reverse}
