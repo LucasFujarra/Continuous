@@ -13,10 +13,10 @@ Abra o endereço exibido pelo Vite. Para acessar pelo celular na mesma rede, use
 
 ## Seus áudios
 
-Coloque os arquivos em `assets/PAD/Nome da pasta/`. Exemplo:
+Coloque os arquivos em `src/assets/PAD/Nome da pasta/`. Exemplo:
 
 ```text
-assets/PAD/
+src/assets/PAD/
   Ambient/
     C.aac
     Csus.aac
