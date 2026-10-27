@@ -27,6 +27,8 @@ export default function App() {
   const urls = useRef<string[]>([]);
   const protectedFolders = new Set(bundledTracks.map(track => track.folder));
   const folders = [...new Set(tracks.map(track => track.folder))].sort((a, b) => a.localeCompare(b));
+  const themeFolder = active?.folder ?? folder;
+  const themeHue = themeFolder ? 160 + Math.max(0, folders.indexOf(themeFolder)) * 35 : 245;
   const visible = orderedTracks(tracks.filter(track => track.folder === folder));
 
   useEffect(() => {
@@ -109,16 +111,19 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [folder]);
 
-  return <div className={folder ? 'app album-view blurwaves-host' : 'app blurwaves-host'}>
-    <BlurWaves activeTrackId={active?.id ?? null} activeFolder={active?.folder ?? null} folders={folders} volume={volume} />
-    {!folder && <header className="header">
-      <a className="brand" href="#" onClick={event => { event.preventDefault(); setFolder(null); }} aria-label="Continuous, início"><span>Continuous<small>AMBIENT PAD PLAYER</small></span></a>
-      <img className="wordmark" src={logo} alt="Continuous" />
-    </header>}
+  useEffect(() => {
+    document.title = active ? `Continuous - ${active.folder}` : 'Continuous';
+  }, [active]);
 
+  return <div className={folder ? 'app album-view blurwaves-host' : 'app blurwaves-host'} style={{ '--theme-hue': themeHue } as React.CSSProperties}>
+    <BlurWaves activeTrackId={active?.id ?? null} activeFolder={active?.folder ?? null} folders={folders} volume={volume} />
     <main>
-      <div className={folder ? 'intro album-intro' : 'intro'}><div><p className="eyebrow">SEU ESPAÇO SONORO</p><h1>{folder || 'Escolha uma atmosfera.'}</h1></div>
-        {folder && <img className="wordmark album-logo" src={logo} alt="Continuous" />}
+      <div className="intro album-intro"><div><p className="eyebrow">Continuous</p><h1>{folder || 'Escolha uma atmosfera.'}</h1></div>
+        <a className="album-logo" href="#" aria-label="Continuous, voltar para a home" onClick={event => {
+          event.preventDefault();
+          setFolder(null);
+          window.scrollTo({ top: 0, behavior: 'instant' });
+        }}><img className="wordmark" src={logo} alt="Continuous" /></a>
         <button className="secondary" disabled={restoring} onClick={() => setUploadOpen(true)}>＋ Adicionar pasta</button>
       </div>
 
