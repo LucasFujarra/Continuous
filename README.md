@@ -48,12 +48,14 @@ No site publicado, os links incluem a base `/Continuous/`, por exemplo: [Angel �
 
 # Tecnologias 🚀
 
+![Node.js](https://img.shields.io/badge/Node.js-22.18%2B-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
 ![React](https://img.shields.io/badge/React-19.2.6-61DAFB?style=for-the-badge&logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-7.3.2-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 
 | Tecnologia | Versão | Uso |
 |------------|--------|-----|
+| Node.js | 22.18+ | Ambiente de desenvolvimento e build |
 | React | 19.2.6 | Interface e estado compartilhado |
 | TypeScript | 5.9.3 | Tipagem |
 | Vite | 7.3.2 | Desenvolvimento e build |
@@ -61,30 +63,5 @@ No site publicado, os links incluem a base `/Continuous/`, por exemplo: [Angel �
 | Web Audio / HTMLAudioElement | — | Reprodução e controle de volume |
 | IndexedDB / localStorage | — | Armazenamento local |
 | GitHub Pages | — | Hospedagem |
-
-# Desenvolvimento 💻
-
-Use **Node.js 22.18 ou superior** e Yarn.
-
-```bash
-yarn install
-yarn dev
-```
-
-| Comando | Ação |
-|---------|------|
-| `yarn run check` | Verifica os tipos TypeScript |
-| `yarn test` | Executa os testes |
-| `yarn build` | Gera a versão de produção em `dist/` |
-| `yarn preview` | Abre uma prévia do build |
-| `yarn deploy` | Publica o build na branch `gh-pages` |
-
-As telas ficam em `src/screens/`, os modais em `src/modal/`, o player em `src/audio/` e as ondas em `src/blurwaves/`. Para incluir álbuns no build, coloque os arquivos em `src/assets/PAD/<álbum>/<tom>.<extensão>` e gere o build novamente.
-
-# Publicação 🌐
-
-Execute `yarn deploy` na branch de desenvolvimento, com o remoto `origin` configurado. No GitHub, selecione **Settings → Pages → Deploy from a branch → gh-pages → / (root)**.
-
-O build usa a base `/Continuous/` e inclui `404.html` para links diretos. Para hospedar na raiz de outro domínio, use `VITE_BASE_PATH=/ yarn build`.
 
 [<img src="https://raw.githubusercontent.com/ismartcoding/plain-app/main/assets/get-it-on-github.png" alt="Ver Continuous no GitHub" height="80">](https://github.com/LucasFujarra/Continuous)
