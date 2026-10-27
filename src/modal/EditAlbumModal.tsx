@@ -1,17 +1,23 @@
-import { useRef, useState, type PointerEvent } from 'react';
+import { lazy, Suspense, useRef, useState, type PointerEvent } from 'react';
 import { hexToHsv, hsvToHex, type AlbumSettings } from '../lib/albumSettings';
+import { emojiCoverColor } from '../lib/albumCovers';
 import { Modal } from './Modal';
+
+const AlbumEmojiPicker = lazy(() => import('./AlbumEmojiPicker'));
 
 interface EditAlbumModalProps {
   title: string;
   color: string;
+  cover: string;
   system: boolean;
   onClose: () => void;
   onSave: (settings: AlbumSettings) => void;
 }
 
-export function EditAlbumModal({ title, color, system, onClose, onSave }: EditAlbumModalProps) {
+export function EditAlbumModal({ title, color, cover, system, onClose, onSave }: EditAlbumModalProps) {
   const [name, setName] = useState(title);
+  const [selectedCover, setSelectedCover] = useState(cover);
+  const [coversOpen, setCoversOpen] = useState(false);
   const [hsv, setHsv] = useState(() => hexToHsv(color));
   const [hex, setHex] = useState(color);
   const [error, setError] = useState('');
@@ -32,15 +38,30 @@ export function EditAlbumModal({ title, color, system, onClose, onSave }: EditAl
   }
 
   const angle = hsv.hue * Math.PI / 180;
-  return <Modal title="Editar álbum" onClose={onClose}>
+  return <Modal className="album-edit-modal" title="Editar álbum" onClose={onClose}>
     <form onSubmit={event => {
       event.preventDefault();
       if (!validHex || !name.trim()) return;
-      try { onSave({ title: system ? undefined : name.trim(), color: hex.toLowerCase() }); }
+      try { onSave({ title: system ? undefined : name.trim(), color: hex.toLowerCase(), cover: selectedCover }); }
       catch { setError('Não foi possível salvar as alterações neste navegador.'); }
     }}>
-      <label className="edit-label" htmlFor="album-title">Título</label>
-      <input id="album-title" className="edit-input" value={name} readOnly={system} maxLength={120} onChange={event => setName(event.target.value)} />
+      <div className="album-edit-heading">
+        <button type="button" className="album-cover-preview" style={{ '--cover-color': validHex ? hex : color } as React.CSSProperties} aria-label="Escolher capa do álbum" aria-expanded={coversOpen} aria-controls="album-cover-options" onClick={() => setCoversOpen(previous => !previous)}>
+          <span aria-hidden="true">{selectedCover}</span><span className="cover-edit-hint" aria-hidden="true">✎</span>
+        </button>
+        <div className="album-title-field"><label className="edit-label" htmlFor="album-title">Título</label>
+          <input id="album-title" className="edit-input" value={name} readOnly={system} maxLength={120} onChange={event => setName(event.target.value)} />
+        </div>
+      </div>
+      {coversOpen && <div id="album-cover-options">
+        <Suspense fallback={<p role="status">Carregando emojis…</p>}>
+          <AlbumEmojiPicker onSelect={emoji => {
+            setSelectedCover(emoji);
+            const suggestedColor = emojiCoverColor(emoji);
+            if (suggestedColor) updateColor(hexToHsv(suggestedColor));
+          }} />
+        </Suspense>
+      </div>}
       <label className="edit-label" htmlFor="album-hex">Hexadecimal</label>
       <div className="hex-field">
         <button type="button" className="color-swatch" style={{ background: validHex ? hex : 'transparent' }} aria-label="Abrir ou fechar círculo de cores" aria-expanded={wheelOpen} aria-controls="album-color-wheel" onClick={() => setWheelOpen(previous => !previous)} />

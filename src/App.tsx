@@ -56,6 +56,7 @@ export default function App() {
   const folder = route?.folder ?? null;
   const themeFolder = active?.folder ?? folder;
   const albumTitle = (name: string) => protectedFolders.has(name) ? name : albumPreferences[name]?.title ?? name;
+  const albumCover = (name: string) => albumPreferences[name]?.cover ?? '≋';
   const albumColor = (name: string) => albumPreferences[name]?.color ?? defaultAlbumColor(folders.indexOf(name));
   const themeColor = themeFolder ? albumColor(themeFolder) : '#8b81e4';
 
@@ -173,13 +174,13 @@ export default function App() {
       {error && <div className="error" role="alert">{error}<button aria-label="Fechar aviso" onClick={() => setError('')}>×</button></div>}
 
       {folder ? <Pad tracks={visible} mode={mode} activeId={active?.id ?? null} loadingId={loading} selectedId={route?.track?.id ?? null} onHome={() => navigate('/')} onMode={selectMode} onPlay={selectTrack} />
-        : <Home folders={folders} tracks={tracks} restoring={restoring} protectedFolders={protectedFolders} albumTitle={albumTitle} albumColor={albumColor} onOpen={name => navigate(padPath(name, folders))} onEdit={setAlbumToEdit} onDelete={setAlbumToDelete} onUpload={() => setUploadOpen(true)} />}
+        : <Home folders={folders} tracks={tracks} restoring={restoring} protectedFolders={protectedFolders} albumTitle={albumTitle} albumColor={albumColor} albumCover={albumCover} onOpen={name => navigate(padPath(name, folders))} onEdit={setAlbumToEdit} onDelete={setAlbumToDelete} onUpload={() => setUploadOpen(true)} />}
     </main>
 
     {albumToDelete !== null && <DeleteAlbumModal busy={deleting} album={albumTitle(albumToDelete)} onClose={() => { if (!deleting) setAlbumToDelete(null); }} onConfirm={() => void deleteAlbum()} />}
-    {albumToEdit !== null && <EditAlbumModal title={albumTitle(albumToEdit)} color={albumColor(albumToEdit)} system={protectedFolders.has(albumToEdit)} onClose={() => setAlbumToEdit(null)} onSave={saveAlbumSettings} />}
+    {albumToEdit !== null && <EditAlbumModal cover={albumCover(albumToEdit)} title={albumTitle(albumToEdit)} color={albumColor(albumToEdit)} system={protectedFolders.has(albumToEdit)} onClose={() => setAlbumToEdit(null)} onSave={saveAlbumSettings} />}
     {uploadOpen && <UploadModal onClose={() => setUploadOpen(false)} onImport={importFiles} />}
 
-    <footer className="player"><div className={`now-icon ${active ? 'is-playing' : ''}`}>{active ? '♫' : '∞'}</div><div className="now-playing"><span>{loading ? 'PREPARANDO ÁUDIO' : active ? albumTitle(active.folder) : 'Continuous'}</span><strong>{active ? displayName(active.name, mode).replace('#', '♯') : loading ? 'Carregando seu pad…' : 'Nenhum pad tocando'}</strong></div><div className="volume"><label htmlFor="volume">Volume</label><input id="volume" type="range" min="0" max="100" value={volume} onChange={event => setVolume(Number(event.target.value))} /><output htmlFor="volume">{volume}%</output></div><button className="stop" disabled={!active && !loading} onClick={stop}>■ <span>Parar</span></button></footer>
+    <footer className="player"><div className={`now-icon ${active ? 'is-playing' : ''}`}>{active ? albumCover(active.folder) : '∞'}</div><div className="now-playing"><span>{loading ? 'PREPARANDO ÁUDIO' : active ? albumTitle(active.folder) : 'Continuous'}</span><strong>{active ? displayName(active.name, mode).replace('#', '♯') : loading ? 'Carregando seu pad…' : 'Nenhum pad tocando'}</strong></div><div className="volume"><label htmlFor="volume">Volume</label><input id="volume" type="range" min="0" max="100" value={volume} onChange={event => setVolume(Number(event.target.value))} /><output htmlFor="volume">{volume}%</output></div><button className="stop" disabled={!active && !loading} onClick={stop}>■ <span>Parar</span></button></footer>
   </div>;
 }

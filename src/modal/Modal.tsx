@@ -3,11 +3,12 @@ import './modal.css';
 
 interface ModalProps {
   title: string;
+  className?: string;
   onClose: () => void;
   children: ReactNode;
 }
 
-export function Modal({ title, onClose, children }: ModalProps) {
+export function Modal({ title, className = '', onClose, children }: ModalProps) {
   const dialog = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
@@ -22,7 +23,7 @@ export function Modal({ title, onClose, children }: ModalProps) {
     };
   }, []);
 
-  return <dialog ref={dialog} className="modal" aria-labelledby={titleId} onCancel={event => { event.preventDefault(); onClose(); }}>
+  return <dialog ref={dialog} className={`modal ${className}`} aria-labelledby={titleId} onCancel={event => { event.preventDefault(); onClose(); }}>
     <button className="modal-close" aria-label="Fechar modal" onClick={onClose}>×</button>
     <h2 id={titleId}>{title}</h2>
     {children}

@@ -1,4 +1,6 @@
-export interface AlbumSettings { title?: string; color?: string }
+import { validAlbumCover } from './albumCovers.ts';
+
+export interface AlbumSettings { title?: string; color?: string; cover?: string }
 export type AlbumPreferences = Record<string, AlbumSettings>;
 
 export function hsvToHex(hue: number, saturation: number, value: number): string {
@@ -32,6 +34,7 @@ export function loadAlbumPreferences(): AlbumPreferences {
       const item = value as AlbumSettings;
       settings[key] = {
         title: typeof item.title === 'string' && item.title.trim() ? item.title : undefined,
+        cover: validAlbumCover(item.cover) ? item.cover : undefined,
         color: typeof item.color === 'string' && /^#[0-9a-f]{6}$/i.test(item.color) ? item.color : undefined,
       };
     }
