@@ -1,0 +1,5 @@
+node_modules/
+dist/
+*.local
+assets/PAD/**/.cache/
+assets/PAD/**/.DS_Store
